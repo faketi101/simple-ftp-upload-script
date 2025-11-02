@@ -1,0 +1,10 @@
+{
+  "ftp": {
+    "host": "ftp.yourdomain.com",
+    "user": "yourusername",
+    "password": "yourpassword",
+    "secure": false,
+    "remoteDir": "/",
+    "localDir": "dist"
+  }
+}
