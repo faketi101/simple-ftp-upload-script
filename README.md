@@ -149,10 +149,9 @@ node upload.js
 
 ## 🧑‍💻 Author
 
-**Tarikul Islam**  
-Frontend Developer | WordPress & React Specialist  
-🌐 [Personal Website](https://tarikul-islam.com)  
-💼 [LinkedIn](https://linkedin.com/in/tarikul-islam)  
+**Tarikul Islam**   
+🌐 [Personal Website](https://tarikul.dev)  
+💼 [LinkedIn](https://linkedin.com/in/its-tarikul-islam)  
 
 ---
 
