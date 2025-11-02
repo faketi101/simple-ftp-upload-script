@@ -25,10 +25,10 @@ It reads all FTP credentials and directory info from a **`ftp_config.json`** fil
 
 ---
 
-## 🧩 1. Install Dependencies
+## 🧩 1. Install Dependencies as Dev
 
 ```bash
-npm install basic-ftp
+npm install basic-ftp -D
 ```
 
 ---
@@ -44,7 +44,7 @@ Create a file named **`ftp_config.json`** in the same directory as your `upload.
     "user": "yourusername",
     "password": "yourpassword",
     "secure": false,
-    "remoteDir": "/public_html/my-upload-folder",
+    "remoteDir": "/",
     "localDir": "dist"
   }
 }
