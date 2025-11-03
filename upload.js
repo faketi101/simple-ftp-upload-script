@@ -4,11 +4,33 @@ import ftp from "basic-ftp";
 
 const __dirname = process.cwd();
 
+// Recursively delete all files and folders from a remote directory
+async function clearRemoteDirectory(client, remoteDir) {
+  try {
+    await client.cd(remoteDir);
+    const list = await client.list();
+
+    for (const item of list) {
+      const fullPath = path.posix.join(remoteDir, item.name);
+      if (item.isDirectory) {
+        console.log(`🗑️ Removing remote directory: ${fullPath}`);
+        await clearRemoteDirectory(client, fullPath);
+        await client.removeDir(fullPath);
+      } else {
+        console.log(`🗑️ Deleting remote file: ${fullPath}`);
+        await client.remove(fullPath);
+      }
+    }
+  } catch (err) {
+    console.warn(`⚠️ Could not clear remote directory ${remoteDir}:`, err.message);
+  }
+}
+
+// Recursively upload all files and folders from local to remote
 async function uploadDirectory(client, localDir, remoteDir) {
   await client.ensureDir(remoteDir);
 
   const items = fs.readdirSync(localDir);
-
   for (const item of items) {
     const localPath = path.join(localDir, item);
     const remotePath = path.posix.join(remoteDir, item);
@@ -25,10 +47,10 @@ async function uploadDirectory(client, localDir, remoteDir) {
 }
 
 async function main() {
-  // Step 1: Load config
   const configPath = path.join(__dirname, "ftp_config.json");
+
   if (!fs.existsSync(configPath)) {
-    console.error("❌ config.json not found!");
+    console.error("❌ ftp_config.json not found!");
     process.exit(1);
   }
 
@@ -36,7 +58,7 @@ async function main() {
   const { host, user, password, secure, remoteDir, localDir } = config.ftp;
 
   if (!localDir) {
-    console.error("❌ 'localDir' not defined in config.json");
+    console.error("❌ 'localDir' not defined in ftp_config.json");
     process.exit(1);
   }
 
@@ -46,7 +68,6 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 2: Connect to FTP
   const client = new ftp.Client();
   client.ftp.verbose = true;
 
@@ -54,7 +75,10 @@ async function main() {
     await client.access({ host, user, password, secure });
     console.log(`✅ Connected to ${host}`);
 
-    // Step 3: Upload recursively
+    console.log(`🚮 Clearing remote directory: ${remoteDir}`);
+    await clearRemoteDirectory(client, remoteDir);
+
+    console.log(`📤 Uploading local directory: ${localDir}`);
     await uploadDirectory(client, localPath, remoteDir);
 
     console.log("🎉 Upload complete!");
