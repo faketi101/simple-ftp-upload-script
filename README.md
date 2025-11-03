@@ -1,161 +1,112 @@
-# 🚀 FTP Uploader Script (by Tarikul Islam)
+# FTP Upload Automation Script
 
-A simple and efficient **Node.js** script that uploads a local directory to an FTP server automatically.  
-It reads all FTP credentials and directory info from a **`ftp_config.json`** file — no manual commands needed!
+This Node.js script uploads a local directory (like `dist`) to an FTP server defined in your configuration file.  
+It automatically **clears the remote directory** before uploading new files — ensuring your server always has the latest version.
 
 ---
 
 ## ⚙️ Features
-- 📁 Uploads all files and subfolders recursively  
-- ⚡ Reads FTP info and directory path from `ftp_config.json`  
-- 🔒 Supports secure (FTPS) or standard FTP connections  
-- 🧹 Automatically ensures remote directories exist  
-- 🧰 Simple one-command deployment  
+
+- ✅ Reads FTP credentials from `ftp_config.json`
+- ✅ Automatically clears the target directory on the FTP server before uploading
+- ✅ Uploads everything recursively from your local folder (like `dist`)
+- ✅ Clean and minimal configuration
 
 ---
 
-## 📄 Project Structure
+## 🧩 Project Structure
 
 ```
-📦 ftp-uploader
- ┣ 📜 ftp_config.json
- ┣ 📜 upload.js
- ┗ 📁 dist/                ← your local directory (example)
-```
-
----
-
-## 🧩 1. Install Dependencies as Dev
-
-```bash
-npm install basic-ftp -D
+project-root/
+│
+├── ftp_config.json
+├── upload.js
+└── README.md
 ```
 
 ---
 
-## ⚙️ 2. Configure FTP Settings
-
-Create a file named **`ftp_config.json`** in the same directory as your `upload.js` file:
+## 🛠️ Example `ftp_config.json`
 
 ```json
 {
-  "ftp": {
-    "host": "ftp.yourdomain.com",
-    "user": "yourusername",
-    "password": "yourpassword",
-    "secure": false,
-    "remoteDir": "/",
-    "localDir": "dist"
-  }
+  "host": "ftp.example.com",
+  "user": "ftp_username",
+  "password": "ftp_password",
+  "remoteDir": "/public_html/your_project_folder"
 }
 ```
 
-> 📝 **Tip:** You can rename the folder (`dist`) or remote path as needed.
-
 ---
 
-## 💻 3. The Upload Script
-
-Click the button below to **copy the full upload script** 👇  
-
-<a href="https://gist.github.com/" target="_blank">
-  <img src="https://img.shields.io/badge/📋%20Click%20to%20Copy-Upload%20Script-blue?style=for-the-badge">
-</a>
+## 🚀 Example `upload.js`
 
 ```js
 import fs from "fs";
-import path from "path";
 import ftp from "basic-ftp";
 
-const __dirname = process.cwd();
-
-async function uploadDirectory(client, localDir, remoteDir) {
-  await client.ensureDir(remoteDir);
-
-  const items = fs.readdirSync(localDir);
-
-  for (const item of items) {
-    const localPath = path.join(localDir, item);
-    const remotePath = path.posix.join(remoteDir, item);
-    const stat = fs.statSync(localPath);
-
-    if (stat.isFile()) {
-      console.log(`📤 Uploading file: ${localPath} -> ${remotePath}`);
-      await client.uploadFrom(localPath, remotePath);
-    } else if (stat.isDirectory()) {
-      console.log(`📁 Entering directory: ${localPath}`);
-      await uploadDirectory(client, localPath, remotePath);
-    }
-  }
-}
-
-async function main() {
-  const configPath = path.join(__dirname, "ftp_config.json");
-
-  if (!fs.existsSync(configPath)) {
-    console.error("❌ ftp_config.json not found!");
-    process.exit(1);
-  }
-
-  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-  const { host, user, password, secure, remoteDir, localDir } = config.ftp;
-
-  if (!localDir) {
-    console.error("❌ 'localDir' not defined in ftp_config.json");
-    process.exit(1);
-  }
-
-  const localPath = path.join(__dirname, localDir);
-  if (!fs.existsSync(localPath)) {
-    console.error(`❌ Local directory not found: ${localPath}`);
-    process.exit(1);
-  }
-
+async function uploadDirectory(localDir) {
+  const config = JSON.parse(fs.readFileSync("ftp_config.json", "utf8"));
   const client = new ftp.Client();
   client.ftp.verbose = true;
 
   try {
-    await client.access({ host, user, password, secure });
-    console.log(`✅ Connected to ${host}`);
+    await client.access({
+      host: config.host,
+      user: config.user,
+      password: config.password,
+      secure: false,
+    });
 
-    await uploadDirectory(client, localPath, remoteDir);
+    console.log("Connected to FTP server");
 
-    console.log("🎉 Upload complete!");
+    // Clear remote directory first
+    console.log("Clearing remote directory:", config.remoteDir);
+    await client.ensureDir(config.remoteDir);
+    await client.clearWorkingDir();
+
+    // Upload local directory
+    console.log("Uploading directory:", localDir);
+    await client.uploadFromDir(localDir);
+
+    console.log("✅ Upload completed successfully!");
   } catch (err) {
-    console.error("🚨 FTP Upload failed:", err);
-  } finally {
-    client.close();
+    console.error("❌ Error:", err);
   }
+
+  client.close();
 }
 
-main();
+// Take directory name from command-line argument
+const localDir = process.argv[2];
+if (!localDir) {
+  console.error("Usage: node upload.js <local_directory>");
+  process.exit(1);
+}
+
+uploadDirectory(localDir);
 ```
 
 ---
 
-## ▶️ 4. Run the Script
+## 💻 Usage
 
-Simply run:
-
-```bash
-node upload.js
-```
-
-✅ The script will:
-- Read FTP info from `ftp_config.json`
-- Upload all files in the specified `localDir` to the `remoteDir`
+1. Place your `ftp_config.json` file in the same folder as `upload.js`  
+2. Run the script with:
+   ```bash
+   node upload.js dist
+   ```
+   > The script will read the `dist` folder and upload it to the remote directory specified in `ftp_config.json`.
 
 ---
 
-## 🧑‍💻 Author
+## 👨‍💻 Author
 
-**Tarikul Islam**   
-🌐 [Personal Website](https://tarikul.dev)  
-💼 [LinkedIn](https://linkedin.com/in/its-tarikul-islam)  
+**Tarikul Islam**  
+Frontend Developer & Web Enthusiast  
+🌐 [tarikul-islam.dev](https://tarikul-islam.dev)  
+💼 [LinkedIn](https://www.linkedin.com/in/tarikul-islam)
 
 ---
 
-## 📜 License
-
-MIT License © 2025 — Tarikul Islam  
-Feel free to modify and distribute for personal or commercial projects.
+**⭐ Tip:** Keep your FTP credentials private. Never commit `ftp_config.json` to GitHub.
