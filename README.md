@@ -154,8 +154,8 @@ main();
 
 **Tarikul Islam**  
 Frontend Developer & Web Enthusiast  
-🌐 [tarikul-islam.dev](https://tarikul-islam.dev)  
-💼 [LinkedIn](https://www.linkedin.com/in/tarikul-islam)
+🌐 [tarikul.dev](https://tarikul.dev)  
+💼 [LinkedIn](https://www.linkedin.com/in/its-tarikul-islam)
 
 ---
 
