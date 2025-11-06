@@ -30,10 +30,14 @@ project-root/
 
 ```json
 {
-  "host": "ftp.example.com",
-  "user": "ftp_username",
-  "password": "ftp_password",
-  "remoteDir": "/public_html/your_project_folder"
+  "ftp": {
+    "host": "ftp.yourdomain.com",
+    "user": "yourusername",
+    "password": "yourpassword",
+    "secure": false,
+    "remoteDir": "/",
+    "localDir": "dist"
+  }
 }
 ```
 
