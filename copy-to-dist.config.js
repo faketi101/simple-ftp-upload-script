@@ -19,8 +19,11 @@
         ".gitignore",
         ".eslintrc",
         ".prettierrc",
-        ""
+        "upload.js",
+        "copy-to-dist.config.js",
+        "copy-to-dist.js",
+        "ftp_config.json",
+        "README.md",
 
     ],
     };
-  
